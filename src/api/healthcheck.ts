@@ -3,16 +3,16 @@ import { GUARDIAN_API } from '../config';
 import { latestHealthCheck, lastStatus } from '../state';
 import { HealthCheckResponse } from '../types';
 
-export const checkHealth = async (userId: string, chatId: string, guardianAddress: string, bot: any) => {
+export const checkHealth = async (chatId: string, guardianAddress: string, bot: any) => {
     try {
         const response = await axios.get<HealthCheckResponse>(`${GUARDIAN_API}/healthchecks/${guardianAddress}`);
-        latestHealthCheck[userId] = response.data;
-        if (lastStatus[userId] !== true && response.data.items[0].alive) {
+        latestHealthCheck[chatId] = response.data;
+        if (lastStatus[chatId] !== true && response.data.items[0].alive) {
             bot.sendMessage(chatId, 'The Guardian is up and running.🤘');
-            lastStatus[userId] = true;
-        } else if (lastStatus[userId] !== false && !response.data.items[0].alive) {
+            lastStatus[chatId] = true;
+        } else if (lastStatus[chatId] !== false && !response.data.items[0].alive) {
             bot.sendMessage(chatId, '⚠️ Health check failed! The Guardian is down! ⚠️');
-            lastStatus[userId] = false;
+            lastStatus[chatId] = false;
         }
     } catch (error: unknown) {
         let errorMessage = 'Unknown error occurred';
@@ -29,9 +29,9 @@ export const checkHealth = async (userId: string, chatId: string, guardianAddres
             errorMessage = error.message;
         }
         console.log(`Error occurred: ${errorMessage}`);
-        if (lastStatus[userId] !== false) {
+        if (lastStatus[chatId] !== false) {
             bot.sendMessage(chatId, '⚠️ Health check failed! The Guardian is down! ⚠️');
-            lastStatus[userId] = false;
+            lastStatus[chatId] = false;
         }
     }
 };

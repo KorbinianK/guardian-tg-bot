@@ -1,11 +1,14 @@
-import { users } from '../state';
+import { UserService } from '../services/userService';
+import { BotMessage, BotInstance } from '../types';
+import validator from 'validator';
+import { isAddress } from 'viem';
 
-export const addressCommand = (msg: any, match: RegExpMatchArray, bot: any) => {
+export const addressCommand = async (msg: BotMessage, match: RegExpMatchArray, userService: UserService, bot: BotInstance) => {
     const chatId = msg.chat.id.toString();
     const address = match ? match[1] : '';
 
-    if (address) {
-        users[chatId] = { chatId, guardianAddress: address };
+    if (address && isAddress(address)) { 
+        await userService.addUser(chatId, address);
         bot.sendMessage(chatId, `Guardian address set to ${address}.`);
     } else {
         bot.sendMessage(chatId, 'Please provide a valid guardian address.');

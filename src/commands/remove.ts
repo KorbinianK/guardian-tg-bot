@@ -1,7 +1,8 @@
-import { users } from '../state';
+import { UserService } from '../services/userService';
+import { BotMessage, BotInstance } from '../types';
 
-export const removeCommand = (msg: any, bot: any) => {
+export const removeCommand = async (msg: BotMessage, userService: UserService, bot: BotInstance) => {
     const chatId = msg.chat.id.toString();
-    delete users[chatId];
+    await userService.deleteUser(chatId);
     bot.sendMessage(chatId, 'Guardian address removed.');
 };

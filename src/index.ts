@@ -4,50 +4,59 @@ import { configCommand } from './commands/config';
 import { helpCommand } from './commands/help';
 import { removeCommand } from './commands/remove';
 import { statusCommand } from './commands/status';
-import { users } from './state';
 import TelegramBot from 'node-telegram-bot-api';
 import { checkHealth } from './api';
-import { getLogger } from './utils/logger';
-// Function to log messages with a timestamp
-const log = getLogger('index');
+import { initDatabase } from './database/database';
+import { UserRepository } from './repositories/userRepository';
+import { UserService } from './services/userService';
+import { BotInstance } from './types';
+import { balanceCommand } from './commands/balance';
+import { blockInfoCommand } from './commands/blockInfo';
 
-// Create a new bot instance
-const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
-
-// Set up interval to check health
-setInterval(() => {
-    for (const userId in users) {
-        const { chatId, guardianAddress } = users[userId];
-        checkHealth(userId, chatId, guardianAddress, bot);
-    }
-}, THRESHOLD_SECONDS);
-
-// Register bot commands
-bot.onText(/\/start/, (msg) => {
-    bot.sendMessage(msg.chat.id, 'Health check bot started! Use /address <your_address> to set your guardian address.');
-});
-
-bot.onText(/\/address (.+)/, (msg, match) => addressCommand(msg, match!, bot));
-bot.onText(/\/config/, (msg) => configCommand(msg, bot));
-bot.onText(/\/help/, (msg) => helpCommand(msg, bot));
-bot.onText(/\/remove/, (msg) => removeCommand(msg, bot));
-bot.onText(/\/status/, (msg) => statusCommand(msg, bot));
-
-// Log startup message
-log('Health check bot is starting...');
-
-const shutdown = () => {
-    log('Health check bot is shutting down...');
-    Object.keys(users).forEach((userId) => {
-        // send a message to all users that the bot is shutting down
-        bot.sendMessage(users[userId].chatId, 'Health check bot server is shutting down...');
-    });
-    bot.stopPolling().then(() => {
-        log('Polling stopped. Exiting process.');
-        process.exit(0);
-    });
+const log = (message: string) => {
+    console.log(`[${new Date().toISOString()}] ${message}`);
 };
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+(async () => {
+    const db = await initDatabase();
+    const userRepository = new UserRepository(db);
+    const userService = new UserService(userRepository);
 
+    const bot: BotInstance = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
+
+    setInterval(() => {
+        userRepository.getAllUsers().then(users => {
+            users.forEach(user => {
+                checkHealth(user.chatId, user.guardianAddress, bot);
+            });
+        });
+    }, THRESHOLD_SECONDS);
+
+    bot.onText(/\/start/, (msg) => {
+        bot.sendMessage(msg.chat.id, 'Health check bot started! Use /address <your_address> to set your guardian address.');
+    });
+
+    bot.onText(/\/address (.+)/, (msg, match) => addressCommand(msg, match!, userService, bot));
+    bot.onText(/\/config/, (msg) => configCommand(msg, userService, bot));
+    bot.onText(/\/help/, (msg) => helpCommand(msg, bot));
+    bot.onText(/\/remove/, (msg) => removeCommand(msg, userService, bot));
+    bot.onText(/\/status/, (msg) => statusCommand(msg, userService, bot));
+    bot.onText(/\/balance/, (msg) => balanceCommand(msg, userService, bot));
+    bot.onText(/\/blockInfo/, (msg) => blockInfoCommand(msg, userService, bot));
+
+    log('Health check bot is starting...');
+
+    const shutdown = () => {
+        log('Health check bot is shutting down...');
+        bot.stopPolling().then(() => {
+            log('Polling stopped. Exiting process.');
+            process.exit(0);
+        }).catch(error => {
+            console.error('Error stopping polling:', error);
+            process.exit(1);
+        });
+    };
+
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+})();

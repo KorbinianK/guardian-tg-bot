@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { GUARDIAN_API, THRESHOLD_SECONDS } from '../config';
-import { users, latestHealthCheck } from '../state';
-import { HealthCheckResponse } from '../types';
+import { latestHealthCheck } from '../state';
+import { BotInstance, BotMessage, HealthCheckResponse } from '../types';
+import { UserService } from '../services/userService';
 
-export const statusCommand = async (msg: any, bot: any) => {
+export const statusCommand = async (msg: BotMessage, userService: UserService, bot: BotInstance) => {
     const chatId = msg.chat.id.toString();
-    const user = users[chatId];
+    const user = await userService.getUser(chatId);
 
     if (!user) {
         bot.sendMessage(chatId, 'Please set your guardian address first using /address <your_address>.');

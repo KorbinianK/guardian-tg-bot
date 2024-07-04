@@ -23,9 +23,15 @@ importers:
       node-telegram-bot-api:
         specifier: ^0.66.0
         version: 0.66.0(request@2.88.2)
+      sqlite:
+        specifier: ^5.1.1
+        version: 5.1.1
       sqlite3:
         specifier: ^5.1.7
         version: 5.1.7
+      validator:
+        specifier: ^13.12.0
+        version: 13.12.0
       viem:
         specifier: ^2.17.0
         version: 2.17.0(typescript@5.5.3)
@@ -45,6 +51,9 @@ importers:
       '@types/sqlite3':
         specifier: ^3.1.11
         version: 3.1.11
+      '@types/validator':
+        specifier: ^13.12.0
+        version: 13.12.0
       ts-node-dev:
         specifier: ^2.0.0
         version: 2.0.0(@types/node@20.14.9)(typescript@5.5.3)
@@ -156,6 +165,9 @@ packages:
 
   '@types/tough-cookie@4.0.5':
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
+
+  '@types/validator@13.12.0':
+    resolution: {integrity: sha512-nH45Lk7oPIJ1RVOF6JgFI6Dy0QpHEzq4QecZhvguxYPDwT8c93prCMqAtiIttm39voZ+DDR+qkNnMpJmMBRqag==}
 
   abbrev@1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
@@ -1136,6 +1148,9 @@ packages:
   sqlite3@5.1.7:
     resolution: {integrity: sha512-GGIyOiFaG+TUra3JIfkI/zGP8yZYLPQ0pl1bH+ODjiX57sPhrLU5sQJn1y9bDKZUFYkX1crlrPfSYt0BKKdkog==}
 
+  sqlite@5.1.1:
+    resolution: {integrity: sha512-oBkezXa2hnkfuJwUo44Hl9hS3er+YFtueifoajrgidvqsJRQFpc5fKoAkAor1O5ZnLoa28GBScfHXs8j0K358Q==}
+
   sshpk@1.18.0:
     resolution: {integrity: sha512-2p2KJZTSqQ/I3+HX42EpYOa2l3f8Erv8MWKsy2I9uf4wA7yFIkXRffYdsx86y6z4vHtV8u7g+pPlr8/4ouAxsQ==}
     engines: {node: '>=0.10.0'}
@@ -1301,6 +1316,10 @@ packages:
 
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
+
+  validator@13.12.0:
+    resolution: {integrity: sha512-c1Q0mCiPlgdTVVVIJIrBuxNicYE+t/7oKeI9MWLj3fh/uq2Pxh/3eeWbVZ4OcGW1TUf53At0njHw5SMdA3tmMg==}
+    engines: {node: '>= 0.10'}
 
   verror@1.10.0:
     resolution: {integrity: sha512-ZZKSmDAEFOijERBLkmYfJ+vmk3w+7hOLYDNkRCuRuMJGEmqYNCNLyBBFwWKVMhfwaEF3WOd0Zlw86U/WC/+nYw==}
@@ -1485,6 +1504,8 @@ snapshots:
   '@types/strip-json-comments@0.0.30': {}
 
   '@types/tough-cookie@4.0.5': {}
+
+  '@types/validator@13.12.0': {}
 
   abbrev@1.1.1:
     optional: true
@@ -2644,6 +2665,8 @@ snapshots:
       - bluebird
       - supports-color
 
+  sqlite@5.1.1: {}
+
   sshpk@1.18.0:
     dependencies:
       asn1: 0.2.6
@@ -2866,6 +2889,8 @@ snapshots:
   uuid@8.3.2: {}
 
   v8-compile-cache-lib@3.0.1: {}
+
+  validator@13.12.0: {}
 
   verror@1.10.0:
     dependencies:
