@@ -42,7 +42,7 @@ const log = (message: string) => {
     bot.onText(/\/remove/, (msg) => removeCommand(msg, userService, bot));
     bot.onText(/\/status/, (msg) => statusCommand(msg, userService, bot));
     bot.onText(/\/balance/, (msg) => balanceCommand(msg, userService, bot));
-    bot.onText(/\/blockInfo/, (msg) => blockInfoCommand(msg, userService, bot));
+    bot.onText(/\/block/, (msg) => blockInfoCommand(msg, userService, bot));
 
     log('Health check bot is starting...');
 

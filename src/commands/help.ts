@@ -8,6 +8,6 @@ export const helpCommand = (msg: BotMessage, bot: BotInstance) => {
         /config - Get your guardian address\n \
         /status - Check the status of your guardian\n \
         /balance - Check the balance of your guardian\n \
-        /blockInfo - Check the latest block number and the signed block number\n \
+        /block - Check the latest block number and the signed block number\n \
         /help - Get help');
 };

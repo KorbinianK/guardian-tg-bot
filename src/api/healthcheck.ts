@@ -1,18 +1,40 @@
 import axios from 'axios';
-import { GUARDIAN_API } from '../config';
+import { GUARDIAN_API, THRESHOLD_SECONDS } from '../config';
 import { latestHealthCheck, lastStatus } from '../state';
-import { HealthCheckResponse } from '../types';
+import { HealthCheckResponse, BotInstance } from '../types';
 
-export const checkHealth = async (chatId: string, guardianAddress: string, bot: any) => {
+export const checkHealth = async (chatId: string, guardianAddress: string, bot: BotInstance, directResponse: boolean = false) => {
     try {
         const response = await axios.get<HealthCheckResponse>(`${GUARDIAN_API}/healthchecks/${guardianAddress}`);
         latestHealthCheck[chatId] = response.data;
-        if (lastStatus[chatId] !== true && response.data.items[0].alive) {
-            bot.sendMessage(chatId, 'The Guardian is up and running.🤘');
-            lastStatus[chatId] = true;
-        } else if (lastStatus[chatId] !== false && !response.data.items[0].alive) {
-            bot.sendMessage(chatId, '⚠️ Health check failed! The Guardian is down! ⚠️');
-            lastStatus[chatId] = false;
+
+        if (response.status === 200 && response.data.items.length > 0) {
+            const createdAt = new Date(response.data.items[0].createdAt);
+            const now = new Date();
+            const alive = (now.getTime() - createdAt.getTime()) <= THRESHOLD_SECONDS;
+
+            if (lastStatus[chatId] !== alive || directResponse) {
+                lastStatus[chatId] = alive;
+
+                const lastSeen = new Date(response.data.items[0].createdAt).toLocaleString();
+
+                const message = alive
+                    ? 'The Guardian is up and running.🤘'
+                    : `⚠️ <b>The Guardian is down!</b>⚠️\nLast seen online at ${lastSeen}.`;
+
+                if (directResponse) {
+                    bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+                } else {
+                    bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+                }
+            }
+        } else {
+            const message = 'This address is not a guardian. Please change your guardian address using /address <your_address>.';
+            if (directResponse) {
+                bot.sendMessage(chatId, message);
+            } else {
+                bot.sendMessage(chatId, message);
+            }
         }
     } catch (error: unknown) {
         let errorMessage = 'Unknown error occurred';
@@ -29,9 +51,11 @@ export const checkHealth = async (chatId: string, guardianAddress: string, bot: 
             errorMessage = error.message;
         }
         console.log(`Error occurred: ${errorMessage}`);
-        if (lastStatus[chatId] !== false) {
-            bot.sendMessage(chatId, '⚠️ Health check failed! The Guardian is down! ⚠️');
-            lastStatus[chatId] = false;
+
+        if (directResponse) {
+            bot.sendMessage(chatId, `⚠️ <b>The Guardian is down!</b>⚠️\n${errorMessage}`, { parse_mode: 'HTML' });
+        } else {
+            bot.sendMessage(chatId, `⚠️ <b>The Guardian is down!</b>⚠️\n${errorMessage}`, { parse_mode: 'HTML' });
         }
     }
 };
