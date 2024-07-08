@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    environment:
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - GUARDIAN_API=${GUARDIAN_API}
+      - THRESHOLD_SECONDS=${THRESHOLD_SECONDS}
+      - RPC_URL=${RPC_URL}
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
