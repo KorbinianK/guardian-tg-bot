@@ -44,10 +44,20 @@ const log = (message: string) => {
     bot.onText(/\/balance/, (msg) => balanceCommand(msg, userService, bot));
     bot.onText(/\/block/, (msg) => blockInfoCommand(msg, userService, bot));
 
-    log('Health check bot is starting...');
+    log('Health check bot started!');
+    const allUsers = await userRepository.getAllUsers();
+    allUsers.map(user => {
+        bot.sendMessage(user.chatId, 'Health check bot started!');
+    });
 
-    const shutdown = () => {
+
+    const shutdown = async () => {
         log('Health check bot is shutting down...');
+        const allUsers = await userRepository.getAllUsers();
+
+        allUsers.map(user => {
+            bot.sendMessage(user.chatId, 'Health check bot is shutting down...');
+        });
         bot.stopPolling().then(() => {
             log('Polling stopped. Exiting process.');
             process.exit(0);

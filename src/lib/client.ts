@@ -1,10 +1,11 @@
 import { createPublicClient, http } from 'viem';
 import { mainnet, taiko } from 'viem/chains';
 
-const jsonRpcUrl = process.env.JSON_RPC_URL || '';
+const rpcUrl = process.env.RPC_URL || '';
+
 export const publicClient = createPublicClient({
     chain: mainnet,
-    transport: http(jsonRpcUrl)
+    transport: http(rpcUrl)
 });
 
 export const taikoClient = createPublicClient({
