@@ -21,4 +21,8 @@ export class UserService {
     async deleteUser(chatId: string): Promise<void> {
         await this.userRepository.deleteUser(chatId);
     }
+
+    async getAllUsers(): Promise<User[]> {
+        return await this.userRepository.getAllUsers();
+    }
 }

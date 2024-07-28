@@ -5,13 +5,14 @@ import { helpCommand } from './commands/help';
 import { removeCommand } from './commands/remove';
 import { statusCommand } from './commands/status';
 import TelegramBot from 'node-telegram-bot-api';
-import { checkHealth } from './api';
 import { initDatabase } from './database/database';
 import { UserRepository } from './repositories/userRepository';
 import { UserService } from './services/userService';
 import { BotInstance } from './types';
 import { balanceCommand } from './commands/balance';
 import { blockInfoCommand } from './commands/blockInfo';
+import { checkSignedBlocksContinuously } from './background/checkSignedBlocksContinuously';
+import { checkHealthContinuously } from './background/checkHealthContinously';
 
 const log = (message: string) => {
     console.log(`[${new Date().toISOString()}] ${message}`);
@@ -23,14 +24,6 @@ const log = (message: string) => {
     const userService = new UserService(userRepository);
 
     const bot: BotInstance = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
-
-    setInterval(() => {
-        userRepository.getAllUsers().then(users => {
-            users.forEach(user => {
-                checkHealth(user.chatId, user.guardianAddress, bot);
-            });
-        });
-    }, THRESHOLD_SECONDS);
 
     bot.onText(/\/start/, (msg) => {
         bot.sendMessage(msg.chat.id, 'Health check bot started! Use /address <your_address> to set your guardian address.');
@@ -44,11 +37,17 @@ const log = (message: string) => {
     bot.onText(/\/balance/, (msg) => balanceCommand(msg, userService, bot));
     bot.onText(/\/block/, (msg) => blockInfoCommand(msg, userService, bot));
 
+
     log('Health check bot started!');
     const allUsers = await userRepository.getAllUsers();
     allUsers.map(user => {
         bot.sendMessage(user.chatId, 'Health check bot started!');
     });
+
+
+    // Background tasks
+    checkSignedBlocksContinuously(userService, bot);
+    checkHealthContinuously(userService, bot);
 
 
     const shutdown = async () => {

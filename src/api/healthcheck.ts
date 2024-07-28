@@ -14,27 +14,23 @@ export const checkHealth = async (chatId: string, guardianAddress: string, bot: 
             const alive = (now.getTime() - createdAt.getTime()) <= THRESHOLD_SECONDS;
 
             if (lastStatus[chatId] !== alive || directResponse) {
-                lastStatus[chatId] = alive;
-
                 const lastSeen = new Date(response.data.items[0].createdAt).toLocaleString();
 
-                const message = alive
-                    ? 'The Guardian is up and running.🤘'
-                    : `⚠️ <b>The Guardian is down!</b>⚠️\nLast seen online at ${lastSeen}.`;
-
-                if (directResponse) {
-                    bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+                let message;
+                if (alive) {
+                    message = lastStatus[chatId] === false
+                        ? '🎉 The Guardian is back up and running!🤘'
+                        : 'The Guardian is up and running.🤘';
                 } else {
-                    bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+                    message = `⚠️ <b>The Guardian is down!</b>⚠️\nLast seen online at ${lastSeen}.`;
                 }
+
+                lastStatus[chatId] = alive;
+                bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
             }
         } else {
             const message = 'This address is not a guardian. Please change your guardian address using /address <your_address>.';
-            if (directResponse) {
-                bot.sendMessage(chatId, message);
-            } else {
-                bot.sendMessage(chatId, message);
-            }
+            bot.sendMessage(chatId, message);
         }
     } catch (error: unknown) {
         let errorMessage = 'Unknown error occurred';
@@ -52,10 +48,6 @@ export const checkHealth = async (chatId: string, guardianAddress: string, bot: 
         }
         console.log(`Error occurred: ${errorMessage}`);
 
-        if (directResponse) {
-            bot.sendMessage(chatId, `⚠️ <b>The Guardian is down!</b>⚠️\n${errorMessage}`, { parse_mode: 'HTML' });
-        } else {
-            bot.sendMessage(chatId, `⚠️ <b>The Guardian is down!</b>⚠️\n${errorMessage}`, { parse_mode: 'HTML' });
-        }
+        bot.sendMessage(chatId, `⚠️ <b>The Guardian is down!</b>⚠️\n${errorMessage}`, { parse_mode: 'HTML' });
     }
 };

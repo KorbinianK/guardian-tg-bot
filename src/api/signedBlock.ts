@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { GUARDIAN_API } from '../config';
-import { latestHealthCheck, lastStatus } from '../state';
 import { SignedBlockResponse } from '../types';
 
 export const signedBlock = async (chatId: string, guardianAddress: string, bot: any) => {
