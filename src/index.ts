@@ -5,7 +5,7 @@ import { helpCommand } from './commands/help';
 import { removeCommand } from './commands/remove';
 import { statusCommand } from './commands/status';
 import TelegramBot from 'node-telegram-bot-api';
-import { initDatabase } from './database/database';
+import { initDatabase } from './database/initDatabase';
 import { UserRepository } from './repositories/userRepository';
 import { UserService } from './services/userService';
 import { BotInstance } from './types';

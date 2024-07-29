@@ -10,7 +10,7 @@ services:
       - RPC_URL=${RPC_URL}
       - NETWORK=${NETWORK}
     volumes:
-      - ./:/usr/src/app/data
+      - ./data:/usr/src/app/data
     ports:
       - "3000:3000"
     restart: unless-stopped
