@@ -1,4 +1,4 @@
-import { TELEGRAM_TOKEN, THRESHOLD_SECONDS } from './config';
+import { GUARDIAN_API, NETWORK, RPC_URL, TELEGRAM_TOKEN, THRESHOLD_SECONDS } from './config';
 import { addressCommand } from './commands/address';
 import { configCommand } from './commands/config';
 import { helpCommand } from './commands/help';
@@ -17,6 +17,12 @@ import { checkHealthContinuously } from './background/checkHealthContinously';
 const log = (message: string) => {
     console.log(`[${new Date().toISOString()}] ${message}`);
 };
+
+log(`TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}`);
+log(`GUARDIAN_API: ${GUARDIAN_API}`);
+log(`THRESHOLD_SECONDS: ${THRESHOLD_SECONDS}`);
+log(`RPC_URL: ${RPC_URL}`);
+log(`NETWORK: ${NETWORK}`);
 
 (async () => {
     const db = await initDatabase();

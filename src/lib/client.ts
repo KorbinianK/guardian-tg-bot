@@ -1,14 +1,15 @@
 import { createPublicClient, http } from 'viem';
-import { mainnet, taiko } from 'viem/chains';
+import { holesky, mainnet, taiko, taikoHekla } from 'viem/chains';
+import { NETWORK, RPC_URL } from '../config';
 
-const rpcUrl = process.env.RPC_URL || '';
+
 
 export const publicClient = createPublicClient({
-    chain: mainnet,
-    transport: http(rpcUrl)
+    chain: NETWORK === "hekla" ? holesky : mainnet,
+    transport: http(RPC_URL)
 });
 
 export const taikoClient = createPublicClient({
-    chain: taiko,
+    chain: NETWORK === "hekla" ? taikoHekla : taiko,
     transport: http()
 });

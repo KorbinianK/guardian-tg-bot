@@ -8,8 +8,9 @@ services:
       - GUARDIAN_API=${GUARDIAN_API}
       - THRESHOLD_SECONDS=${THRESHOLD_SECONDS}
       - RPC_URL=${RPC_URL}
+      - NETWORK=${NETWORK}
     volumes:
-      - .:/usr/src/app
+      - ./:/usr/src/app/data
     ports:
       - "3000:3000"
     restart: unless-stopped
