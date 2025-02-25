@@ -1,27 +1,33 @@
-import { UserService } from './../services/userService';
-import { UserRepository } from "../repositories/userRepository";
-import { BotInstance } from "../types";
-import { taikoClient } from "../lib/client";
-import { signedBlock } from "../api/signedBlock";
+import { UserService } from '../services/userService';
+import { BotInstance } from '../types';
+import { signedBlock } from '../api/signedBlock';
+import { taikoClient } from '../lib/client';
+import axios from 'axios';
 
-const CHECK_INTERVAL_MS = 60 * 1000;
+const INITIAL_RETRY_INTERVAL_MS = 60000; // 1 minute
+const MAX_RETRY_INTERVAL_MS = 600000; // 10 minutes
 const SIGNED_BLOCK_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
 
+const failureCounts: { [chatId: string]: number } = {};
+const retryIntervals: { [chatId: string]: number } = {};
+
 export const checkSignedBlocksContinuously = async (userService: UserService, bot: BotInstance) => {
-    const checkSignedBlocks = async () => {
+    const checkBlocksForUsers = async () => {
         const users = await userService.getAllUsers();
 
         for (const user of users) {
-            const { chatId, guardianAddress: address } = user;
+            const { chatId, guardianAddress } = user;
 
             try {
-                const latestBlock = await taikoClient.getBlock({
-                    blockTag: 'latest'
-                });
-                const latestSignedBlock = await signedBlock(chatId, address, bot);
+                console.log(`[Block Check] Checking signed blocks for ${guardianAddress}...`);
 
-                if (!latestBlock || !latestSignedBlock) {
-                    continue; // Skip if unable to fetch block info
+                const latestBlock = await taikoClient.getBlock({ blockTag: 'latest' });
+                const latestSignedBlock = await signedBlock(chatId, user.guardianAddress, bot);
+
+                if (!latestSignedBlock || !latestBlock) {
+                    console.warn(`[Block Check] No signed block found for ${guardianAddress}`);
+                    bot.sendMessage(chatId, `⚠️ Block check failed! ⚠️\nReason: No signed block found.`);
+                    continue;
                 }
 
                 const latestBlockTime = new Date(Number(latestBlock.timestamp) * 1000);
@@ -35,14 +41,36 @@ export const checkSignedBlocksContinuously = async (userService: UserService, bo
                         <b>Last signed:</b> ${latestSignedBlock.blockID}
                         <b>Time since last signed block:</b> ${Math.floor(timeDiff / 60000)} minutes`,
                         { parse_mode: 'HTML' });
+
+                    console.warn(`[Block Check] Guardian ${guardianAddress} has no signed blocks for ${Math.floor(timeDiff / 60000)} minutes!`);
                 }
+
+                failureCounts[chatId] = 0;
+                retryIntervals[chatId] = INITIAL_RETRY_INTERVAL_MS;
+
             } catch (error) {
-                console.error(`Error checking signed blocks for user ${chatId}:`, error);
+                let errorMessage = 'Unknown error occurred';
+                if (axios.isAxiosError(error)) {
+                    errorMessage = error.response?.data?.message || error.message || 'API error';
+                }
+
+                console.error(`[Block Check] Error for user ${chatId}: ${errorMessage}`);
+
+                failureCounts[chatId] = (failureCounts[chatId] || 0) + 1;
+
+                if (failureCounts[chatId] >= 10) {
+                    retryIntervals[chatId] = Math.min(
+                        Math.max(retryIntervals[chatId] * 2, INITIAL_RETRY_INTERVAL_MS * 2),
+                        MAX_RETRY_INTERVAL_MS
+                    );
+
+                    bot.sendMessage(chatId, `⚠️ Block check failed ${failureCounts[chatId]} times.\nReason: ${errorMessage}\nRetrying in ${retryIntervals[chatId] / 60000} min.`, { parse_mode: 'HTML' });
+                } else {
+                    bot.sendMessage(chatId, `⚠️ Block check failed! ⚠️\nReason: ${errorMessage}`, { parse_mode: 'HTML' });
+                }
             }
         }
     };
 
-    await checkSignedBlocks();
-
-    setInterval(checkSignedBlocks, CHECK_INTERVAL_MS);
+    setInterval(checkBlocksForUsers, INITIAL_RETRY_INTERVAL_MS);
 };
